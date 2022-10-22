@@ -187,7 +187,9 @@ class F110_Wrapped(gym.Wrapper):
         t = -np.random.uniform(max(-rand_offset * np.pi / 2, 0) - np.pi / 2,
                                min(-rand_offset * np.pi / 2, 0) + np.pi / 2) + direction
         # reset car with chosen pose
-        observation, _, _, _ = self.env.reset(np.array([[x, y, t]]))
+        observation, _, _, _ = self.env.reset(np.array([[0.0, 0.0, 0.5]]))
+        # observation, _, _, _ = self.env.reset(np.array([[x, y, t]]))
+        # observation, _, _, _ = self.env.reset()
         # reward, done, info can't be included in the Gym format
         return self.normalise_observations(observation['scans'][0])
 
@@ -253,7 +255,7 @@ class RandomMap(gym.Wrapper):
         # get random starting position from centerline
         random_index = np.random.randint(len(self.waypoints))
         start_xy = self.waypoints[random_index]
-        print(start_xy)
+        # print(start_xy)
         next_xy = self.waypoints[(random_index + 1) % len(self.waypoints)]
         # get forward direction by pointing at next point
         direction = np.arctan2(next_xy[1] - start_xy[1],

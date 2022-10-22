@@ -33,13 +33,13 @@ import numpy as np
 
 from datetime import datetime
 
-from stable_baselines3 import PPO
+from stable_baselines3 import PPO, DQN
 
 from code.wrappers import F110_Wrapped, RandomMap
 
 
 TRAIN_DIRECTORY = "./train"
-MIN_EVAL_EPISODES = 5
+MIN_EVAL_EPISODES = 2000
 MAP_PATH = "./f1tenth_gym/examples/example_map"
 MAP_EXTENSION = ".png"
 MAP_CHANGE_INTERVAL = 3000
@@ -67,8 +67,8 @@ def main(args):
     eval_env = wrap_env()
 
     # set random seed
-    eval_env.seed(np.random.randint(pow(2, 32) - 1))
-
+    # eval_env.seed(np.random.randint(pow(2, 31) - 1))
+    eval_env.seed(0)
     # load or create model
     model, _ = load_model(args.load,
                           TRAIN_DIRECTORY,
@@ -77,26 +77,41 @@ def main(args):
 
     # simulate a few episodes and render them, ctrl-c to cancel an episode
     episode = 0
+    # while episode < MIN_EVAL_EPISODES:
+    episodes = []
     while episode < MIN_EVAL_EPISODES:
         try:
+            print(f"Episode {episode}", end="")
             episode += 1
             obs = eval_env.reset()
             done = False
+            step = 0
+
             while not done:
                 # use trained model to predict some action, using observations
                 action, _ = model.predict(obs)
                 obs, _, done, _ = eval_env.step(action)
-                eval_env.render()
+                step += 1
+                # eval_env.render(mode='human_fast')
+
+            print(f" Step: {step}", end="\n")
+            episodes.append({"episode": episode, "step": step})
             # this section just asks the user if they want to run more episodes
-            if episode == (MIN_EVAL_EPISODES - 1):
-                choice = input("Another episode? (Y/N) ")
-                if choice.replace(" ", "").lower() in ["y", "yes"]:
-                    episode -= 1
-                else:
-                    episode = MIN_EVAL_EPISODES
+            # if episode == (MIN_EVAL_EPISODES - 1):
+            #     # if done == False:
+            #     #     episode -= 1
+            #     # else:
+            #     #     episode = MIN_EVAL_EPISODES
+            #     choice = input("Another episode? (Y/N) ")
+            #     if choice.replace(" ", "").lower() in ["y", "yes"]:
+            #         episode -= 1
+            #     else:
+            #         episode = MIN_EVAL_EPISODES
         except KeyboardInterrupt:
             pass
 
+    # close environment
+    print(sorted(episodes, key=lambda x: x["step"], reverse=True))
 
 def load_model(load_arg, train_directory, envs, tensorboard_path=None, evaluating=False):
     '''
@@ -133,7 +148,7 @@ def load_model(load_arg, train_directory, envs, tensorboard_path=None, evaluatin
         model_name = model_name.replace(f"{train_directory}/", '')
         print(f"Loading model ({train_directory}) {model_name}")
         # load model from path
-        model = PPO.load(model_path)
+        model = PPO.load(model_path, envs)
         # set and reset environment
         model.set_env(envs)
         envs.reset()

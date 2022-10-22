@@ -43,8 +43,8 @@ from code.eoin_callbacks import SaveOnBestTrainingRewardCallback
 
 
 TRAIN_DIRECTORY = "./train"
-TRAIN_STEPS = pow(10, 5)  # for reference, it takes about one sec per 500 steps
-NUM_PROCESS = 4
+TRAIN_STEPS = pow(10, 7)  # for reference, it takes about one sec per 500 steps
+NUM_PROCESS = 12
 MAP_PATH = "./f1tenth_gym/examples/example_map"
 MAP_EXTENSION = ".png"
 MAP_CHANGE_INTERVAL = 3000
@@ -81,7 +81,8 @@ def main(args):
     # vectorise environment (parallelise)
     envs = make_vec_env(wrap_env,
                         n_envs=NUM_PROCESS,
-                        seed=np.random.randint(pow(2, 32) - 1),
+                        # seed=np.random.randint(pow(2, 31) - 1),
+                        seed=0,
                         monitor_dir=log_dir,
                         vec_env_cls=SubprocVecEnv)
 
